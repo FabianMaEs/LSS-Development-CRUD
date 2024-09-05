@@ -1,3 +1,5 @@
+> **Nota:** El proyecto principal se encuentra en la carpeta `AdministracionSalas`.
+
 # Funcionamiento
 El sistema crea las salas como objetos de la clase **Sala**.
 
