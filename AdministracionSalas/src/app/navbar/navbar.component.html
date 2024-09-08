@@ -1,0 +1,13 @@
+<nav class="navbar navbar-light bg-light">
+    <div *ngIf="usuario" class="container-fluid">
+      <span class="navbar-text ms-auto">
+        Bienvenido, {{ usuario }}
+      </span>
+    </div>
+    <div *ngIf="!usuario" class="container-fluid">
+      <span class="navbar-text ms-auto">
+        <button class="btn btn-primary">Iniciar sesión</button>
+      </span>
+    </div>
+  </nav>
+  
