@@ -7,12 +7,16 @@ export class UsuarioService {
   
   usuario: string | null = null;
 
-  get() {
+  get(): string | null {
     return this.usuario;
   }
 
-  set(usuario: string) {
+  set(usuario: string): void {
     this.usuario = usuario;
+  }
+
+  estaLogueado() {
+    return this.usuario !== null;
   }
 
   limpiar() {

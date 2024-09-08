@@ -7,10 +7,11 @@ Esta clase contiene atributos como nombre, el estado actual y una lista de reser
 Las reservas se crear como objetos de la clase **Reserva**.
 Esta clase contiene atributos como la sala, el usuario, la fecha y el horario reservado.
 
-Para la interfaz se usa Bootstrap.
+Para la interfaz se usa Bootstrap y SweetAlert2.
 
 # Funcionalidades del gestor
 - **Visualización de salas:** Muestra todas las salas disponibles y su estado actual (disponible u ocupada).
+  - **Actualización automática:** La disponibilidad de las salas se actualiza automáticamente cada minuto
 - **Reserva de salas:** Permite a los usuarios seleccionar una sala, una fecha, y un rango de horas para realizar una reserva, siempre que cumpla con las siguientes restricciones:
   - La duración de la reserva no puede exceder las 2 horas.
   - Las horas de inicio y fin deben ser congruentes (la hora de inicio debe ser anterior a la de finalización).
@@ -25,9 +26,10 @@ Para la interfaz se usa Bootstrap.
   - **Completado:** Implementar la funcionalidad para reservar una sala de juntas con un rango de horario inicial y final.
   - **Completado:** Impedir la reserva de salas de juntas que ya estén ocupadas.
   - **Completado:** Restringir la duración máxima de la reserva a 2 horas.
-  - Implementar la liberación automática de la sala de juntas al vencer el horario de reserva.
-  - Permitir la liberación manual de la sala de juntas antes de finalizar el tiempo de reserva.
+  - **Completado:** Implementar la liberación automática de la sala de juntas al vencer el horario de reserva.
+  - **Completado:** Permitir la liberación manual de la sala de juntas antes de finalizar el tiempo de reserva.
+    > **Nota:** El usuario tiene total control de sus reservas. Solo él puede eliminar las reservas hechas por él mmismo.
 
 - Agregar base de datos.
 - Permitir registro de usuarios
-  - El usuario solo puede eliminar o modificar sus reservas, no las de los demás usuarios.
+  - **Completado:** El usuario solo puede eliminar o modificar sus reservas, no las de los demás usuarios.
