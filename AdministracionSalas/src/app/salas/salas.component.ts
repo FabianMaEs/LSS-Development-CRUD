@@ -2,43 +2,19 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../usuario.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-salas',
   standalone: true,
   imports: [
-      CommonModule,
-      FormsModule
-    ],
-    providers: [
-      UsuarioService
-    ],
+    CommonModule,
+    FormsModule
+  ],
   templateUrl: './salas.component.html',
   styleUrl: './salas.component.css'
 })
 export class SalasComponent {
-
-    constructor(private usuarioService: UsuarioService) {
-      // Configura la fecha de hoy para México
-      const hoy = new Date();
-      hoy.setHours(hoy.getHours() - 6); // Resta 6 horas (UTC-6)
-
-      // Solo se puede seleccionar la fecha de hoy o posteriores
-      this.fechaHoy = hoy.toISOString().split('T')[0];
-      this.fechaSeleccionada = this.fechaHoy;
-
-      this.usuario = usuarioService.get();
-
-  }
-
-  // Definir salas de prueba
-  salas: Sala[] = [
-    new Sala(1, 'Sala 1', true),
-    new Sala(2, 'Sala 2', true),
-    new Sala(3, 'Sala 3'),
-    new Sala(4, 'Sala 4', true),
-    new Sala(5, 'Sala 5')
-  ];
 
   // Inicialización de variables
   opcion = 'menu';
@@ -51,10 +27,78 @@ export class SalasComponent {
   esReservaValida: boolean = false;
   errorReserva: string | null = null;
   fechaHoy: string;
+  hoy: Date = new Date();
   usuario: string | null = null;
+  horaActual: string | null = null;
 
-  // Verifica que la sala no sea reservada por más de 2 horas
+  constructor(public usuarioService: UsuarioService) {
+    // Configura la fecha de hoy para México
+    this.hoy = new Date();
+    this.hoy.setHours(this.hoy.getHours());
+    console.log('Fecha de hoy', this.hoy);
+
+    // Solo se puede seleccionar la fecha de hoy o posteriores
+    this.fechaHoy = this.hoy.toISOString().split('T')[0];
+    this.fechaSeleccionada = this.fechaHoy;
+    this.usuario = usuarioService.get();
+    this.horaActual = this.hoy.toTimeString().split(' ')[0].substring(0, 5);
+
+    this.actualizarHora(); // Actualizar la hora al iniciar la aplicación
+    this.configurarIntervalo(); // Configurar el intervalo dinámico
+  }
+
+  // Definir salas de prueba
+  salas: Sala[] = [
+    new Sala(1, 'Sala 1'),
+    new Sala(2, 'Sala 2'),
+    new Sala(3, 'Sala 3'),
+    new Sala(4, 'Sala 4'),
+    new Sala(5, 'Sala 5')
+  ];
+
+  // Actualiza la hora actual y verifica el estado de las salas
+  actualizarHora() {
+    this.hoy = new Date(); // Actualiza this.hoy con la hora exacta
+    this.horaActual = this.hoy.toTimeString().split(' ')[0].substring(0, 5); // Actualiza la hora actual en formato HH:MM
+    this.verificarEstadoSalas(this.salas); // Verificar si alguna sala cambió su estado de ocupación
+  }
+
+  // Configura el intervalo dinámico para actualizar la hora cada minuto
+  configurarIntervalo() {
+    const ahora = new Date();
+    const segundosRestantes = 60 - ahora.getSeconds(); // Tiempo restante hasta el próximo minuto
+
+    // Esperar el tiempo restante para el próximo minuto y actualizar la hora
+    setTimeout(() => {
+      this.actualizarHora();
+      setInterval(() => this.actualizarHora(), 60000);
+    }, segundosRestantes * 1000);
+  }
+
+  // Verifica el estado de las salas
+  verificarEstadoSalas(sala?: Sala[]) {
+    if(sala) {
+      sala.forEach(sala => {
+        sala.estado = this.estaSalaOcupada(sala);
+        console.log('Sala', sala.id, 'Estado', sala.estado);
+      });
+    } else {
+      console.log('Salas', this.salas);
+    }
+  }
+
+  // Verifica que el horario de inicio y fin sean válidos dentro del rango de 07:00 a 22:00
   validarHoras() {
+    const horaInicioValida = this.horaInicio !== null && this.horaInicio >= '07:00' && this.horaInicio <= '22:00';
+    const horaFinValida = this.horaFin !== null && this.horaFin >= '07:00' && this.horaFin <= '22:00';
+
+    if (!horaInicioValida || !horaFinValida) {
+      this.errorReserva = 'Las horas deben estar entre las 07:00 y las 22:00';
+      this.esReservaValida = false;
+      return;
+    }
+    
+    // Verifica que la sala no sea reservada por más de 2 horas y las horas sean congruentes
     if (this.horaInicio && this.horaFin) {
       const inicio = new Date(`1970-01-01T${this.horaInicio}:00`); // Crea una fecha con la hora de inicio
       const fin = new Date(`1970-01-01T${this.horaFin}:00`);
@@ -65,22 +109,32 @@ export class SalasComponent {
         this.esReservaValida = true;
       } else {
         this.esReservaValida = false;
-        if (diferencia <= 0) {
-          this.errorReserva = 'La hora de fin debe ser mayor a la hora de inicio';
-        } else {
-          this.errorReserva = 'La reserva no puede ser mayor a 2 horas';
-        }
+        this.errorReserva = diferencia <= 0 ? 'La hora de fin debe ser mayor a la hora de inicio' : 'La reserva no puede ser mayor a 2 horas';
       }
     }
   }
+
+  // Verifica si una sala está ocupada en este momento
+  estaSalaOcupada(sala: Sala): boolean {
+    const fechaHoy = this.hoy.toISOString().split('T')[0]; // Obtener la fecha actual en formato YYYY-MM-DD
+    const horaActual = this.hoy.toTimeString().split(' ')[0].substring(0, 5); // Obtener la hora actual en formato HH:MM
+    // Verificar si la sala tiene una reserva en la fecha y hora actual
+    return sala.reservas.some(reserva => {
+      return reserva.fecha === fechaHoy &&
+            reserva.horaInicio <= horaActual &&
+            reserva.horaFin >= horaActual;
+    });
+  }
+
 
   // Reserva la sala seleccionada si la fecha y horario son válidos y existen
   reservarSala() {
     if (this.salaSeleccionada && this.esReservaValida && this.fechaSeleccionada && this.horaInicio && this.horaFin) {
       // Guardar en la BD la reserva
       // Fecha, horas, sala y usuario
-      this.reserva = new Reserva(this.fechaSeleccionada, this.horaInicio, this.horaFin, 'NombreUsuario', this.salaSeleccionada.id);
-      this.salaSeleccionada.reservarSala(this.reserva);
+      this.reserva = new Reserva(this.fechaSeleccionada, this.horaInicio, this.horaFin, this.usuarioService.get() || 'Todos', this.salaSeleccionada.id);
+      this.salaSeleccionada.reservarSala(this.reserva, this.salaSeleccionada.nombre);
+      console.log('Reserva', this.reserva.get());
     }
   }
 
@@ -93,13 +147,14 @@ export class SalasComponent {
   cambiarVistaReservar(sala: Sala) {
     this.opcion = 'reservar';
     this.salaSeleccionada = sala;
+    this.verificarEstadoSalas(this.salas);
   }
 
   // Habilita la vista de todas las salas
   cambiarVistaMenu() {
     this.opcion = 'menu';
+    this.verificarEstadoSalas(this.salas);
   }
-  
 }
 
 // Definición de la clase Sala
@@ -116,16 +171,15 @@ class Sala {
     this.nombre = nombre;
     this.estado = estado;
     this.reservas = [
-      { fecha: '2024-09-07', horaInicio: '08:00', horaFin: '08:59', usuario: 'NombreUsuario' },
+      { fecha: '2024-09-07', horaInicio: '08:00', horaFin: '08:59', usuario: 'fabmac865@gmail.com' },
       { fecha: '2024-09-07', horaInicio: '09:00', horaFin: '09:59', usuario: 'Fabian' },
-      { fecha: '2024-09-07', horaInicio: '10:00', horaFin: '10:59', usuario: 'NombreUsuario' },
+      { fecha: '2024-09-07', horaInicio: '21:00', horaFin: '22:00', usuario: 'Todos' },
     ];
+
   }
 
   // Métodos de la clase
-
-  // Reserva la sala, recibe un objeto de tipo Reserva
-    reservarSala(reserva: Reserva) {
+  reservarSala(reserva: Reserva, nombreSala: string) {
     // Verificar si la sala está disponible en el horario seleccionado y no se solapan las reservas
     const disponible = this.reservas.every(r => {
       return r.fecha !== reserva.fecha || 
@@ -134,16 +188,39 @@ class Sala {
   
     if (disponible) {
       this.reservas.push(reserva);
+      Swal.fire({
+        icon: 'success',
+        title: 'Reserva exitosa',
+        text: `${nombreSala}: ${reserva.fecha} (${reserva.horaInicio} - ${reserva.horaFin})`
+      });
     } else {
-      alert('La sala no está disponible en el horario seleccionado');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'La sala no está disponible en el horario seleccionado'
+      });
     }
   }
 
   // Elimina una reserva de la sala
   eliminarReserva(reserva: { horaInicio: string, usuario: string}) {
-    console.log('Eliminando reserva', reserva);
-    // Verificar si es el usuario que hizo la reserva
-    this.reservas = this.reservas.filter(r => r.horaInicio !== reserva.horaInicio);
+    Swal.fire({
+      icon: 'warning',
+      title: '¿Estás seguro?',
+      text: `¿Deseas eliminar la reserva a las ${reserva.horaInicio}?`,
+      showCancelButton: true,
+      confirmButtonText: 'Sí',
+      cancelButtonText: 'No'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.reservas = this.reservas.filter(r => r.horaInicio !== reserva.horaInicio);
+        Swal.fire({
+          icon: 'success',
+          title: 'Reserva eliminada',
+          text: `La reserva a las ${reserva.horaInicio} ha sido eliminada`
+        });
+      }
+    });
   }
 }
 

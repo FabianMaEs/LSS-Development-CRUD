@@ -1,13 +1,15 @@
 <nav class="navbar navbar-light bg-light">
-    <div *ngIf="usuario" class="container-fluid">
-      <span class="navbar-text ms-auto">
-        Bienvenido, {{ usuario }}
-      </span>
-    </div>
-    <div *ngIf="!usuario" class="container-fluid">
-      <span class="navbar-text ms-auto">
-        <button class="btn btn-primary">Iniciar sesión</button>
-      </span>
-    </div>
-  </nav>
-  
+  <div *ngIf="usuario" class="container-fluid">
+    <span class="navbar-text ms-auto">
+      Bienvenido, {{ usuario }}
+    </span>
+    <span>
+      <button class="btn btn-primary mx-5" (click)="cerrarSesion()">Cerrar sesión</button>
+    </span>
+  </div>
+  <div *ngIf="!usuario" class="container-fluid">
+    <span class="navbar-text ms-auto">
+      <button class="btn btn-primary" (click)="mostrarFormularioLogin()">Iniciar sesión</button>
+    </span>
+  </div>
+</nav>
