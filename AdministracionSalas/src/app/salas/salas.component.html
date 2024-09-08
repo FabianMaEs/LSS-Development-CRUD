@@ -8,16 +8,23 @@
   <link rel="stylesheet" href="salas.component.css">
 </head>
 <body>
- 
+
+  <div class="container">
+    <h1 class="text-center my-1">Reservar sala</h1>
+    <h4 class="text-center">Hora actual: {{ horaActual }} </h4>
+  </div>
+
   <div [ngSwitch]="opcion">
 
     <div *ngSwitchCase="'menu'">
       <div class="row px-5 py-5">
         <div class="col-sm-6 col-md-4 col-lg-3" *ngFor="let sala of salas">
           <div class="card my-1" style="width: 18rem;">
-            <div class="card-body" [class.rojo]="sala.estado === false" [class.verde]="sala.estado === true">
+            <div class="card-body" [class.rojo]="sala.estado" [class.verde]="!sala.estado">
               <h5 class="card-title">{{ sala.nombre }}</h5>
-              <p class="card-text">{{ sala.estado ? "Libre" : "Ocupada" }}</p>
+              <p class="card-text">
+                {{ sala.estado ? "Ocupada" : "Libre" }}
+              </p>
             </div>
             <div class="card-body">
               <button class="btn btn-primary" (click)="cambiarVistaReservar(sala)">Abrir sala</button>
@@ -72,7 +79,7 @@
                   <td>{{ reserva.horaFin }}</td>
                   <td>{{ reserva.usuario }}</td>
                   <td>
-                      <button class="btn btn-danger" (click)="salaSeleccionada.eliminarReserva(reserva)">Eliminar</button>
+                      <button class="btn btn-danger" [disabled]="reserva.usuario !== usuarioService.get() && reserva.usuario !== 'Todos'"  (click)="salaSeleccionada.eliminarReserva(reserva)">Eliminar</button>
                   </td>
                 </tr>
               </tbody>
