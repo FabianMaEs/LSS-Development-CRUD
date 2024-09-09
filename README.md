@@ -2,6 +2,8 @@
 
 > **Nota:** El servidor de este proyecto y la base de datos se encuentran <a href="https://github.com/FabianMaEs/LSS-Development-CRUD-Server" target="_blank">aquí</a>
 
+> **Nota:** Los caso de prueba están <a href="https://eduuaa-my.sharepoint.com/:x:/g/personal/al294996_edu_uaa_mx/EUSPW556y8lAiMtguccfOgUB90WU5pfcCaItz-GvuOsI9Q?e=Qc89Qa" target="_blank">aquí</a>
+
 # Funcionamiento
 El sistema crea las salas como objetos de la clase **Sala**.
 Esta clase contiene atributos como nombre, el estado actual y una lista de reservas. La clase incluye métodos para reservar y eliminar reservas. Asegura que no haya conflictos con los horarios.
