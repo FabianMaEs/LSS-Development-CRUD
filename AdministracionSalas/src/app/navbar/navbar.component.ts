@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { UsuarioService } from '../usuario.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SalasService } from '../salas.service';
 
 @Component({
   selector: 'app-navbar',
@@ -18,7 +19,7 @@ import { FormsModule } from '@angular/forms';
 export class NavbarComponent {
   usuario: any;
 
-  constructor(private usuarioService: UsuarioService) {
+  constructor(private usuarioService: UsuarioService, private salasService: SalasService) {
     this.usuario = usuarioService.get();
   }
 
@@ -42,7 +43,7 @@ export class NavbarComponent {
     // Definición del tipo LoginFormResult
     type LoginFormResult = {
       username: string;
-      password: string;
+      //password: string;
     };
 
     Swal.fire<LoginFormResult>({
@@ -79,16 +80,45 @@ export class NavbarComponent {
       }
     }).then(({ value }) => {
       if (value) {
-       // Verificar en la base de datos si el usuario existe
-
-        // Mostrar mensaje de bienvenida
-        Swal.fire({
-          title: `¡Bienvenido, ${value.username}!`,
-          icon: 'success'
+        this.verificarUsuario(value.username).then((existeUsuario) => {
+          if (existeUsuario) {
+            // Mostrar mensaje de bienvenida
+            Swal.fire({
+              title: `¡Bienvenido, ${value.username}!`,
+              icon: 'success'
+            });
+            this.usuarioService.set(value.username);
+            this.usuario = this.usuarioService.get();
+          } else {
+            // No existe el usuario, mostrar mensaje de advertencia y crearlo
+            Swal.fire({
+              title: `Usuario no encontrado, se creará uno nuevo`,
+              icon: 'warning'
+            });
+            this.usuarioService.set(value.username);
+            this.usuario = this.usuarioService.get();
+            // Agregar el nuevo usuario
+            this.salasService.agregarUsuario(value.username).subscribe(
+              (response) => {
+                console.log('Usuario creado exitosamente:', response);
+              },
+              (error) => {
+                console.error('Error al crear el usuario:', error);
+              }
+            );
+          }
         });
-        this.usuarioService.set(value.username);
-        this.usuario = this.usuarioService.get();
       }
-    });
+    }); 
+    
+  }
+
+  async verificarUsuario(usuario: string): Promise<boolean> {
+    const resultado = await this.salasService.verificarUsuario(usuario).toPromise();
+    return resultado.length > 0;
+  }
+
+  async agregarUsuario(usuario: string): Promise<any> {
+    return await this.salasService.agregarUsuario(usuario).toPromise();
   }
 }

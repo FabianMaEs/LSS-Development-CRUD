@@ -5,3 +5,37 @@
 .verde {
     color: green;
 }
+
+/* Estilos para el tamaño de las tarjetas */
+.container {
+    max-width: 100%; 
+    padding: 0 15px; 
+  }
+  
+  .row {
+    margin-right: 0;
+    margin-left: 0;
+  }
+  
+  .card {
+    flex: 1 1 auto; 
+    width: 100%; 
+    max-width: 100%; 
+  }
+  
+  .card-body {
+    word-wrap: break-word; 
+  }
+  
+  
+  @media (max-width: 576px) {
+    .card {
+      width: 100%; 
+    }
+  
+    .row {
+      display: flex;
+      flex-wrap: wrap; 
+    }
+  }
+  
